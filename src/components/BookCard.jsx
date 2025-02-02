@@ -4,12 +4,12 @@ import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { LuBookOpen, LuTrash2 } from "react-icons/lu";
 
-export default function BookCard({ id, title, author, coverImage }) {
+export default function BookCard({ bookId, title, author, coverImage }) {
   const navigate = useNavigate();
   const theme = useTheme();
   return (
     <Card
-      key={id}
+      key={bookId}
       bg={theme.colors.cardBg}
       borderWidth="1px"
       borderColor={theme.colors.borderColor}
@@ -60,7 +60,7 @@ export default function BookCard({ id, title, author, coverImage }) {
 
 // Prop Validation
 BookCard.propTypes = {
-  id: PropTypes.string.isRequired,
+  bookId: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   author: PropTypes.oneOfType([
     PropTypes.string,

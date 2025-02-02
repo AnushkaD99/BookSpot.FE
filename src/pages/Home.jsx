@@ -51,7 +51,7 @@ export default function Home() {
             {latestBooks.map((book) => (
               <BookCard
                 key={book.id}
-                id={book.id}
+                bookId={book.id}
                 title={book.volumeInfo.title}
                 author={book.volumeInfo.authors}
                 coverImage={book.volumeInfo.imageLinks?.thumbnail}

@@ -1,5 +1,5 @@
 // SignInPage.jsx
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
@@ -21,9 +21,12 @@ import {
   useTheme
 } from '@chakra-ui/react';
 import { LuEye, LuEyeOff } from 'react-icons/lu';
+import axios from 'axios';
+import { UserContext } from '../context/UserContext';
 
 export default function SignInPage() {
   const theme = useTheme();
+  const {user, setUser} = useContext(UserContext);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -31,6 +34,54 @@ export default function SignInPage() {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  const loginUrl = "http://localhost:5133/api/auth/login";
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    console.log(formData.email);
+    if (!validateForm()) return;
+    
+    try {
+      const response = await axios.post(loginUrl, {
+        userName: formData.email,
+        password: formData.password
+      },{
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+    }});
+
+      setUser(response.data);
+      console.log(response.data.user);
+      setFormData({ email: '', password: '' });
+      setIsLoading(false);
+      //redirect to home route
+      window.location.href = "/";
+      
+    } catch (error) {
+      console.log(error.response.data.msg);
+
+      error.response ? setErrors(error.response.data.msg) : setErrors("Something went wrong");  
+      setIsLoading(false);
+      
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Invalid email address';
+    }
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   return (
     <Box bg={theme.colors.bg} minH="calc(100vh - 64px)" py={12}>
@@ -57,7 +108,7 @@ export default function SignInPage() {
           </VStack>
 
           {/* Sign In Form */}
-          <form style={{ width: '100%' }}>
+          <form onSubmit={handleSubmit} style={{ width: '100%' }}>
             <VStack spacing={4}>
               <FormControl isInvalid={errors.email}>
                 <FormLabel>Email address</FormLabel>
@@ -76,7 +127,7 @@ export default function SignInPage() {
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
-                    // onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     placeholder="Enter your password"
                   />
                   <InputRightElement>

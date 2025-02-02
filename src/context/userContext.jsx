@@ -4,7 +4,7 @@ import React, { createContext, useState, useEffect, useMemo } from 'react';
 const UserContext = createContext();
 
 const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState("a");
 
   // Load user data from local storage on initial render
   useEffect(() => {

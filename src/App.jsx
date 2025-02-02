@@ -1,11 +1,24 @@
-import { Box, Text } from "@chakra-ui/react"
+import React from "react";
+import { Box, Flex } from "@chakra-ui/react";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { Home, Login, Register} from "./pages";
 
 function App() {
   return (
-    <Box>
-      <Text>Hello!</Text>
-    </Box>
-  )
+    <Router>
+      <Flex direction={"column"} minH={"100vh"}>
+        <Box flex="1" mb={10}>
+          <Routes>
+            <Route exact path="/" element={<Home />}></Route>
+            <Route path="/signin" element={<Login />} />
+            <Route path="/signup" element={<Register />} />
+          </Routes>
+        </Box>
+        <Routes>
+        </Routes>
+      </Flex>
+    </Router>
+  );
 }
 
-export default App
+export default App;

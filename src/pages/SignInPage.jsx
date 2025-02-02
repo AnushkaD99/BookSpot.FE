@@ -18,7 +18,8 @@ import {
   HStack,
   Link,
   FormErrorMessage,
-  useTheme
+  useTheme,
+  useToast
 } from '@chakra-ui/react';
 import { LuEye, LuEyeOff } from 'react-icons/lu';
 import axios from 'axios';
@@ -26,6 +27,7 @@ import { UserContext } from '../context/UserContext';
 
 export default function SignInPage() {
   const theme = useTheme();
+  const toast = useToast();
   const {user, setUser} = useContext(UserContext);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -61,9 +63,14 @@ export default function SignInPage() {
       window.location.href = "/";
       
     } catch (error) {
-      console.log(error.response.data.msg);
-
-      error.response ? setErrors(error.response.data.msg) : setErrors("Something went wrong");  
+      console.log(error);
+      toast({
+        title: 'Error signing in',
+        description: 'Please check your credentials and try again.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      }); 
       setIsLoading(false);
       
     }

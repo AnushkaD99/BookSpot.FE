@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -15,12 +15,13 @@ import {
   IconButton,
   Divider,
   HStack,
-  useColorModeValue,
   Link,
   FormErrorMessage,
-  useTheme
+  useTheme,
+  useToast
 } from '@chakra-ui/react';
 import { LuEye, LuEyeOff } from 'react-icons/lu';
+import axios from 'axios';
 
 export default function SignUpPage() {
   const theme = useTheme();
@@ -35,6 +36,80 @@ export default function SignUpPage() {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const toast = useToast();
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.fName.trim()) {
+      newErrors.fName = 'First name is required';
+    }
+    if (!formData.lName.trim()) {
+      newErrors.lLame = 'Last name is required';
+    }
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Invalid email address';
+    }
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    } else if (!/(?=.*[A-Z])(?=.*[a-z])(?=.*\W)/.test(formData.password)) {
+      newErrors.password =
+        'Password must contain at least one capital letter, one small letter, and one symbol';
+    }
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const signupUrl = "http://localhost:5133/api/auth/register";
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    console.log("1")
+    try {
+      setIsLoading(true);
+
+      const response = await axios.post(signupUrl, {
+        firstName: formData.fName,
+        lastName: formData.lName,
+        email: formData.email,
+        password: formData.password
+
+      });
+      console.log(response.data);
+      setFormData({ email: '', password: '', fName: '', lName: '' });
+
+      setIsLoading(false);
+      toast({
+        title: 'Account created successfully!',
+        description: 'Welcome to BookSpot.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      navigate("/signin");
+    } catch (error) {
+      setErrors(error);
+      setIsLoading(false);
+      toast({
+        title: 'Error creating account',
+        description: 'Please try again later.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      console.log(error);
+    }
+  };
 
   return (
     <Box bg={theme.colors.bg} minH="calc(100vh - 64px)" py={12}>
@@ -61,7 +136,7 @@ export default function SignUpPage() {
           </VStack>
 
           {/* Sign Up Form */}
-          <form style={{ width: '100%' }}>
+          <form onSubmit={handleSubmit} style={{ width: '100%' }}>
             <VStack spacing={4}>
               <FormControl isInvalid={errors.name}>
                 <FormLabel>First Name</FormLabel>
@@ -79,7 +154,7 @@ export default function SignUpPage() {
                 <Input
                   type="text"
                   value={formData.lName}
-                  onChange={(e) => setFormData({ ...formData, lNname: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, lName: e.target.value })}
                   placeholder="Enter your last name"
                 />
                 <FormErrorMessage>{errors.name}</FormErrorMessage>

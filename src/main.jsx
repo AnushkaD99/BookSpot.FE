@@ -9,7 +9,8 @@ const theme = extendTheme({
     bg: "gray.50",
     cardBg: "white",
     accent: "purple.500",
-    text: "gray.800"
+    text: "gray.600",
+    borderColor: "gray.200"
   }
 });
 

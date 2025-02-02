@@ -3,6 +3,7 @@ import { Box, Flex } from "@chakra-ui/react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { Home, Login, Register} from "./pages";
 import NavBar from "./components/NavBar";
+import Footer from "./components/Footer";
 
 function App() {
   return (
@@ -16,8 +17,7 @@ function App() {
             <Route path="/signup" element={<Register />} />
           </Routes>
         </Box>
-        <Routes>
-        </Routes>
+        <Footer />
       </Flex>
     </Router>
   );

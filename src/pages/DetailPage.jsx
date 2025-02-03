@@ -71,9 +71,10 @@ export default function DetailPage() {
         isClosable: true,
       });
     } catch (error) {
+      console.log(error)
       toast({
         title: "Something went wrong!",
-        description: error.message,
+        description: "This book is already added",
         status: "error",
         duration: 3000,
         isClosable: true,

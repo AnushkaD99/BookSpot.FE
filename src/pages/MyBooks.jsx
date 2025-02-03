@@ -23,6 +23,7 @@ import { LuTrash2, LuBookOpen } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import BookCard from "../components/BookCard";
+import axios from "axios";
 
 export default function MyBooks() {
   const [books, setBooks] = useState([]);
@@ -31,6 +32,42 @@ export default function MyBooks() {
   const toast = useToast();
   const navigate = useNavigate();
   const theme = useTheme();
+
+  const getFavBooksURL = `http://localhost:5133/api/book?userId=${user?.id}`;
+
+  const fetchUserBooks = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(getFavBooksURL, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
+      setBooks(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error fetching books:", error);
+      toast({
+        title: "Error fetching books",
+        description: "Unable to load your books. Please try again later.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBookRemoved = (id) => {
+    setBooks((prevBooks) => prevBooks.filter((book) => book.id !== id));
+  };
+
+  useEffect(() => {
+    fetchUserBooks();
+  }, []);
 
   if (loading) {
     return (
@@ -41,11 +78,7 @@ export default function MyBooks() {
   }
 
   return (
-    <Box
-      minH="calc(100vh - 64px)"
-      bg={useColorModeValue("gray.50", "gray.900")}
-      py={8}
-    >
+    <Box minH="calc(100vh - 64px)" bg={"gray.50"} py={8}>
       <Container maxW="container.xl">
         <VStack spacing={6} align="stretch">
           <Box>
@@ -92,60 +125,14 @@ export default function MyBooks() {
               gap={6}
             >
               {books.map((book) => (
-                // <Card
-                //   key={book.id}
-                //   bg={theme.colors.cardBg}
-                //   borderWidth="1px"
-                //   borderColor={theme.colors.borderColor}
-                //   transition="all 0.3s"
-                //   _hover={{ transform: 'translateY(-4px)', boxShadow: 'lg' }}
-                // >
-                //   <CardBody>
-                //     <Image
-                //       src={book.coverImage || '/book-placeholder.png'}
-                //       alt={book.title}
-                //       borderRadius="lg"
-                //       w="full"
-                //       h="250px"
-                //       objectFit="cover"
-                //       mb={4}
-                //     />
-                //     <Stack spacing={3}>
-                //       <Heading size="md" noOfLines={2}>
-                //         {book.title}
-                //       </Heading>
-                //       <Text color={theme.colors.text} fontSize="sm">
-                //         by {book.author}
-                //       </Text>
-                //       <HStack justify="space-between" pt={2}>
-                //         <Button
-                //           variant="outline"
-                //           colorScheme="purple"
-                //           size="sm"
-                //           leftIcon={<LuBookOpen size={16} />}
-                //           onClick={() => navigate(`/book/${book.bookId}`)}
-                //         >
-                //           More Details
-                //         </Button>
-                //         <IconButton
-                //           icon={<LuTrash2 size={16} />}
-                //           colorScheme="red"
-                //           variant="ghost"
-                //           size="sm"
-                //           // onClick={() => handleRemoveBook(book.id)}
-                //           aria-label="Remove book"
-                //         />
-                //       </HStack>
-                //     </Stack>
-                //   </CardBody>
-                // </Card>
-
                 <BookCard
                   key={book.id}
                   id={book.id}
-                  title={book.volumeInfo.title}
-                  author={book.volumeInfo.authors}
-                  coverImage={book.volumeInfo.imageLinks?.thumbnail}
+                  bookId={book.isbn}
+                  title={book.title}
+                  author={book.author}
+                  coverImage={book.coverImage}
+                  onBookRemoved={handleBookRemoved}
                 />
               ))}
             </Grid>

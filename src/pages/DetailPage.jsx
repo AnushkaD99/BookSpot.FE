@@ -31,46 +31,55 @@ export default function DetailPage() {
   const navigate = useNavigate();
   const theme = useTheme();
 
-  // const saveBook = async () => {
-  //   if (!isAuthenticated) {
-  //     toast({
-  //       title: "Please sign in to add books!",
-  //       status: "warning",
-  //       duration: 3000,
-  //       isClosable: true,
-  //     });
-  //     navigate("/signin");
-  //     return;
-  //   }
+  const addFavBookUrl = "http://localhost:5133/api/book";
 
-  //   try {
-  //     const bookToSave = {
-  //       userId: user?.uid,
-  //       bookId: bookId,
-  //       title: title,
-  //       author: authors?.join(", "),
-  //       coverImage: imageLinks?.thumbnail || "",
-  //       addedAt: new Date().toISOString(),
-  //     };
-  
-  //     await addDoc(collection(db, "savedBooks"), bookToSave);
-  //     toast({
-  //       title: "Book successfully added to My Books!",
-  //       status: "success",
-  //       duration: 3000,
-  //       isClosable: true,
-  //     });
-  //   } catch (error) {
-  //     toast({
-  //       title: "Something went wrong!",
-  //       description: error.message,
-  //       status: "error",
-  //       duration: 3000,
-  //       isClosable: true,
-  //     });
-  //   }
-  // };
-  
+  const saveBook = async () => {
+    if (!user) {
+      toast({
+        title: "Please sign in to add books!",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      navigate("/signin");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        addFavBookUrl,
+        {
+          userId: user?.id,
+          isbn: bookId,
+          title: title,
+          author: authors?.join(", "),
+          coverImage: imageLinks?.thumbnail || "",
+        },
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${user?.token}`
+          },
+        }
+      );
+
+      toast({
+        title: "Book successfully added to My Books!",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Something went wrong!",
+        description: error.message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
 
   const fetchBookDetails = async () => {
     try {
@@ -86,21 +95,13 @@ export default function DetailPage() {
   };
 
   // const checkIfBookSaved = async () => {
-  //   if (isAuthenticated) {
-  //     const q = query(
-  //       collection(db, "savedBooks"),
-  //       where("userId", "==", user?.uid),
-  //       where("bookId", "==", bookId)
-  //     );
-  //     const querySnapshot = await getDocs(q);
-  //     setIsBookSaved(!querySnapshot.empty);
-  //   }
+  //   
   // };
 
   useEffect(() => {
     fetchBookDetails();
     // checkIfBookSaved();
-  }, [bookId,user]);
+  }, [bookId, user]);
 
   if (loading) {
     return (
@@ -171,7 +172,7 @@ export default function DetailPage() {
                 colorScheme="purple"
                 size="lg"
                 isDisabled={isBookSaved}
-                // onClick={saveBook}
+                onClick={saveBook}
               >
                 {isBookSaved ? "Already Added" : "Add to My Books"}
               </Button>
@@ -213,7 +214,11 @@ export default function DetailPage() {
               </Box>
               {averageRating && (
                 <Box>
-                  <Stack direction="row" align="center" color={theme.colors.text}>
+                  <Stack
+                    direction="row"
+                    align="center"
+                    color={theme.colors.text}
+                  >
                     <LuStar size={20} />
                     <Text>
                       {averageRating}/5 ({ratingsCount} reviews)
